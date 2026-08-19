@@ -11,7 +11,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import type { Adaptation, LessonSection } from 'melda-shared';
 import { api } from '../../../src/api/client';
 import { useApi } from '../../../src/api/useApi';
-import { Badge, Button, Card, EmptyState, Loading, Screen, Txt } from '../../../src/ui/components';
+import { Badge, Button, Card, ErrorState, Loading, Screen, Txt } from '../../../src/ui/components';
 import { adaptationLabel, color, sp, weight } from '../../../src/ui/tokens';
 
 const KIND_LABEL: Record<string, string> = {
@@ -23,7 +23,7 @@ const KIND_LABEL: Record<string, string> = {
 
 export default function LessonReader() {
   const { lessonId } = useLocalSearchParams<{ lessonId: string }>();
-  const { data: lesson, loading, error } = useApi(() => api.lesson(lessonId));
+  const { data: lesson, loading, error, reload } = useApi(() => api.lesson(lessonId));
 
   if (loading && !lesson) {
     return (
@@ -38,7 +38,11 @@ export default function LessonReader() {
     return (
       <Screen>
         <Stack.Screen options={{ title: 'Lesson' }} />
-        <EmptyState title="Could not load this lesson" body={error ?? undefined} icon="🔍" />
+        <ErrorState
+          title="Could not load this lesson"
+          message={error ?? undefined}
+          onRetry={reload}
+        />
       </Screen>
     );
   }

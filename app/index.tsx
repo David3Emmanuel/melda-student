@@ -40,7 +40,9 @@ export default function Login() {
       // Clear any half-set token so a failed attempt leaves a clean signed-out state.
       signOut();
       setError(
-        e instanceof ApiError ? e.message : 'Could not reach MELDA. Is the backend running?',
+        e instanceof ApiError
+          ? e.message
+          : "Can't connect to MELDA right now. Check your connection and try again.",
       );
     } finally {
       setBusy(false);

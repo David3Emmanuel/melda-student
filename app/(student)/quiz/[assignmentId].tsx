@@ -18,7 +18,7 @@ import { useApi } from '../../../src/api/useApi';
 import {
   Button,
   Card,
-  EmptyState,
+  ErrorState,
   Loading,
   Screen,
   StatTile,
@@ -29,7 +29,7 @@ import { color, masteryTone, radius, sp, weight } from '../../../src/ui/tokens';
 export default function Quiz() {
   const { assignmentId } = useLocalSearchParams<{ assignmentId: string }>();
   const router = useRouter();
-  const { data, loading, error } = useApi(() => api.assignment(assignmentId));
+  const { data, loading, error, reload } = useApi(() => api.assignment(assignmentId));
 
   const [selections, setSelections] = useState<Selections>({});
   const [localScore, setLocalScore] = useState<number | null>(null);
@@ -50,7 +50,11 @@ export default function Quiz() {
     return (
       <Screen>
         <Stack.Screen options={{ title: 'Review' }} />
-        <EmptyState title="Could not load this review" body={error ?? undefined} icon="🔍" />
+        <ErrorState
+          title="Could not load this review"
+          message={error ?? undefined}
+          onRetry={reload}
+        />
       </Screen>
     );
   }
@@ -68,7 +72,11 @@ export default function Quiz() {
       setLocalScore(res.scorePct);
       setRetaking(false);
     } catch (e) {
-      setFailed(e instanceof ApiError ? e.message : 'Could not submit. Is the backend running?');
+      setFailed(
+        e instanceof ApiError
+          ? e.message
+          : "Can't connect to MELDA right now. Check your connection and try again.",
+      );
     } finally {
       setBusy(false);
     }

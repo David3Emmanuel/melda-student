@@ -13,6 +13,7 @@ import {
   Button,
   Card,
   EmptyState,
+  ErrorState,
   Loading,
   Row,
   Screen,
@@ -28,7 +29,7 @@ export default function StudentHome() {
   const signOut = useSession((s) => s.signOut);
   const firstName = name?.split(' ')[0] ?? 'there';
 
-  const { data, loading, error } = useApi(async () => {
+  const { data, loading, error, reload } = useApi(async () => {
     const [assignments, lessons] = await Promise.all([
       api.assignments(classId),
       api.lessons(classId),
@@ -42,7 +43,9 @@ export default function StudentHome() {
     <Screen title={`Hi, ${firstName}`} subtitle={className} right={right}>
       {loading && !data ? <Loading /> : null}
 
-      {error ? <EmptyState title="Could not load your work" body={error} icon="⚠️" /> : null}
+      {error ? (
+        <ErrorState title="Could not load your work" message={error} onRetry={reload} />
+      ) : null}
 
       {data ? (
         <>
