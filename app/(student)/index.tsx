@@ -1,0 +1,119 @@
+// The student's home. Two lists: the reviews they have been set (each showing
+// their own status and score, never a classmate's) and the lessons they can read.
+// Both come from the backend scoped to this student (GET /classes/:id/assignments
+// and /lessons); useApi refetches on focus, so a score appears here the moment a
+// submitted quiz sends them back.
+
+import { useRouter } from 'expo-router';
+import { api } from '../../src/api/client';
+import { useApi } from '../../src/api/useApi';
+import { useSession } from '../../src/state/store';
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Loading,
+  Row,
+  Screen,
+  Txt,
+} from '../../src/ui/components';
+import { color, sp } from '../../src/ui/tokens';
+
+export default function StudentHome() {
+  const router = useRouter();
+  const classId = useSession((s) => s.currentClass?.id) ?? '';
+  const className = useSession((s) => s.currentClass?.name);
+  const name = useSession((s) => s.user?.name);
+  const signOut = useSession((s) => s.signOut);
+  const firstName = name?.split(' ')[0] ?? 'there';
+
+  const { data, loading, error } = useApi(async () => {
+    const [assignments, lessons] = await Promise.all([
+      api.assignments(classId),
+      api.lessons(classId),
+    ]);
+    return { assignments, lessons };
+  });
+
+  const right = <Button title="Sign out" variant="ghost" size="sm" onPress={signOut} />;
+
+  return (
+    <Screen title={`Hi, ${firstName}`} subtitle={className} right={right}>
+      {loading && !data ? <Loading /> : null}
+
+      {error ? <EmptyState title="Could not load your work" body={error} icon="⚠️" /> : null}
+
+      {data ? (
+        <>
+          <Txt variant="h3">Your reviews</Txt>
+          {data.assignments.length === 0 ? (
+            <EmptyState
+              title="No reviews yet"
+              body="When your teacher sets one, it shows up here."
+              icon="📝"
+            />
+          ) : (
+            data.assignments.map(({ assignment, submitted, scorePct }) => (
+              <Card
+                key={assignment.id}
+                onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
+              >
+                <Row style={{ justifyContent: 'space-between' }}>
+                  <Badge
+                    label={submitted ? 'Submitted' : 'To do'}
+                    tone={submitted ? 'ok' : 'warn'}
+                    dot
+                  />
+                  {submitted && scorePct !== null ? (
+                    <Txt variant="tiny" c={color.inkMuted}>
+                      Scored {scorePct}%
+                    </Txt>
+                  ) : null}
+                </Row>
+                <Txt variant="h3" style={{ marginTop: sp.sm }}>
+                  {assignment.title}
+                </Txt>
+                <Txt variant="small" c={color.inkMuted} style={{ marginTop: 2 }}>
+                  {assignment.questions.length} questions
+                </Txt>
+                <Button
+                  title={submitted ? 'Retake the review' : 'Start the review'}
+                  icon="✏️"
+                  size="sm"
+                  style={{ marginTop: sp.md }}
+                  onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
+                />
+              </Card>
+            ))
+          )}
+
+          <Txt variant="h3" style={{ marginTop: sp.sm }}>
+            Your lessons
+          </Txt>
+          {data.lessons.length === 0 ? (
+            <EmptyState
+              title="No lessons yet"
+              body="Your teacher's published lessons will appear here."
+              icon="📚"
+            />
+          ) : (
+            data.lessons.map((l) => (
+              <Card key={l.id} onPress={() => router.push(`/(student)/lesson/${l.id}`)}>
+                <Txt variant="h3">{l.title}</Txt>
+                <Txt variant="small" c={color.inkMuted} numberOfLines={2} style={{ marginTop: 2 }}>
+                  {l.summary}
+                </Txt>
+                {l.adaptations.length ? (
+                  <Txt variant="tiny" c={color.accentInk} style={{ marginTop: sp.sm }}>
+                    ✨ {l.adaptations.length} MELDA explanation{l.adaptations.length > 1 ? 's' : ''}
+                  </Txt>
+                ) : null}
+              </Card>
+            ))
+          )}
+        </>
+      ) : null}
+    </Screen>
+  );
+}
