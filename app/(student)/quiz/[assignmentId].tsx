@@ -209,6 +209,9 @@ function Choice(props: { label: string; selected: boolean; onPress: () => void }
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: selected }}
       style={{
         flexDirection: 'row',
         alignItems: 'center',

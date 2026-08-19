@@ -129,6 +129,7 @@ export function Card(props: { children: ReactNode; onPress?: () => void; style?:
     return (
       <Pressable
         onPress={onPress}
+        accessibilityRole="button"
         style={({ pressed }) => [styles.card, style, pressed ? styles.pressed : null]}
       >
         {children}
@@ -211,6 +212,9 @@ export function Button(props: {
     <Pressable
       disabled={isDisabled}
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       style={({ pressed }) => [...base, pressed && !isDisabled ? styles.pressed : null]}
     >
       {loading ? (
@@ -318,7 +322,13 @@ export function BarRow(props: {
     </View>
   );
   return onPress ? (
-    <Pressable onPress={onPress} style={({ pressed }) => (pressed ? styles.pressed : null)}>
+    <Pressable
+      onPress={onPress}
+      accessible
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${display ?? String(value)}${sub ? `, ${sub}` : ''}`}
+      style={({ pressed }) => (pressed ? styles.pressed : null)}
+    >
       {inner}
     </Pressable>
   ) : (
