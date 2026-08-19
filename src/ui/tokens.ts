@@ -132,3 +132,38 @@ export const adaptationLabel: Record<string, string> = {
   practice: 'Practice',
   reexplain: 'Re-explained',
 };
+
+/**
+ * Human due-date for a review, at day granularity (a classroom deadline is a
+ * date, not a time-of-day). `now` is injectable so the label is testable without
+ * a real clock. `tone` drives the text colour (warn when due within a day),
+ * `closed` is true once the due day has passed.
+ * Day buckets only, no "in 3 hours" - upgrade path is
+ * Intl.RelativeTimeFormat if finer buckets are ever needed.
+ */
+export const dueLabel = (
+  dueAt: string,
+  now: number = Date.now(),
+): { text: string; tone: Tone; closed: boolean } => {
+  const t = Date.parse(dueAt);
+  if (Number.isNaN(t)) return { text: '', tone: 'neutral', closed: false };
+  const startOfDay = (ms: number) => {
+    const d = new Date(ms);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  };
+  // Round, not floor: DST makes some days 23/25h, so the raw ms gap between two
+  // local midnights isn't always an exact multiple of a 24h day.
+  const days = Math.round((startOfDay(t) - startOfDay(now)) / 86_400_000);
+  if (days < 0) {
+    const n = -days;
+    return {
+      text: n === 1 ? 'Closed yesterday' : `Closed ${n} days ago`,
+      tone: 'neutral',
+      closed: true,
+    };
+  }
+  if (days === 0) return { text: 'Due today', tone: 'warn', closed: false };
+  if (days === 1) return { text: 'Due tomorrow', tone: 'warn', closed: false };
+  return { text: `Due in ${days} days`, tone: 'neutral', closed: false };
+};

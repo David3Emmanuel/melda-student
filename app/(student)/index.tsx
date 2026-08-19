@@ -19,7 +19,7 @@ import {
   Screen,
   Txt,
 } from '../../src/ui/components';
-import { color, sp } from '../../src/ui/tokens';
+import { color, dueLabel, sp, toneStyle, weight } from '../../src/ui/tokens';
 
 export default function StudentHome() {
   const router = useRouter();
@@ -57,38 +57,48 @@ export default function StudentHome() {
               icon="📝"
             />
           ) : (
-            data.assignments.map(({ assignment, submitted, scorePct }) => (
-              <Card
-                key={assignment.id}
-                onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
-              >
-                <Row style={{ justifyContent: 'space-between' }}>
-                  <Badge
-                    label={submitted ? 'Submitted' : 'To do'}
-                    tone={submitted ? 'ok' : 'warn'}
-                    dot
-                  />
-                  {submitted && scorePct !== null ? (
-                    <Txt variant="tiny" c={color.inkMuted}>
-                      Scored {scorePct}%
-                    </Txt>
-                  ) : null}
-                </Row>
-                <Txt variant="h3" style={{ marginTop: sp.sm }}>
-                  {assignment.title}
-                </Txt>
-                <Txt variant="small" c={color.inkMuted} style={{ marginTop: 2 }}>
-                  {assignment.questions.length} questions
-                </Txt>
-                <Button
-                  title={submitted ? 'Retake the review' : 'Start the review'}
-                  icon="✏️"
-                  size="sm"
-                  style={{ marginTop: sp.md }}
+            data.assignments.map(({ assignment, submitted, scorePct }) => {
+              const due = dueLabel(assignment.dueAt);
+              return (
+                <Card
+                  key={assignment.id}
                   onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
-                />
-              </Card>
-            ))
+                >
+                  <Row style={{ justifyContent: 'space-between' }}>
+                    <Badge
+                      label={submitted ? 'Submitted' : 'To do'}
+                      tone={submitted ? 'ok' : 'warn'}
+                      dot
+                    />
+                    {submitted && scorePct !== null ? (
+                      <Txt variant="tiny" c={color.inkMuted}>
+                        Scored {scorePct}%
+                      </Txt>
+                    ) : null}
+                  </Row>
+                  <Txt variant="h3" style={{ marginTop: sp.sm }}>
+                    {assignment.title}
+                  </Txt>
+                  <Row style={{ justifyContent: 'space-between', marginTop: 2 }}>
+                    <Txt variant="small" c={color.inkMuted}>
+                      {assignment.questions.length} questions
+                    </Txt>
+                    {due.text ? (
+                      <Txt variant="small" w={weight.semibold} c={toneStyle(due.tone).fg}>
+                        {due.text}
+                      </Txt>
+                    ) : null}
+                  </Row>
+                  <Button
+                    title={submitted ? 'Retake the review' : 'Start the review'}
+                    icon="✏️"
+                    size="sm"
+                    style={{ marginTop: sp.md }}
+                    onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
+                  />
+                </Card>
+              );
+            })
           )}
 
           <Txt variant="h3" style={{ marginTop: sp.sm }}>
