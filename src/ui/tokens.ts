@@ -14,10 +14,10 @@ export const color = {
   border: '#E4E7EC',
   track: '#EDEFF3', // empty bar track
 
-  // ink (all AA on white)
+  // ink (all AA on white; inkMuted also clears AA on the appBg it sits on)
   ink: '#17203A',
   inkSecondary: '#48546B',
-  inkMuted: '#6B7280',
+  inkMuted: '#5B6472',
   inkInverse: '#FFFFFF',
 
   // brand
@@ -75,6 +75,22 @@ export const toneStyle = (tone: Tone): { bg: string; fg: string } => {
       return { bg: color.accentSoft, fg: color.accentInk };
     case 'neutral':
       return { bg: color.neutralSoft, fg: color.inkSecondary };
+  }
+};
+
+/** Base (vivid) fill colour for a bar/mark of a given tone. */
+export const toneFill = (tone: Tone): string => {
+  switch (tone) {
+    case 'struggle':
+      return color.struggle;
+    case 'warn':
+      return color.warn;
+    case 'ok':
+      return color.ok;
+    case 'accent':
+      return color.accent;
+    case 'neutral':
+      return color.inkMuted;
   }
 };
 
