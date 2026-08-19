@@ -359,6 +359,28 @@ export function EmptyState(props: { title: string; body?: string; icon?: string 
   );
 }
 
+// --- error state -------------------------------------------------------------
+// A failed fetch. Same centred layout as EmptyState, plus a retry that re-runs
+// the screen's fetcher (useApi.reload) - so recovery is one tap, not a
+// navigate-away-and-back.
+export function ErrorState(props: { title?: string; message?: string; onRetry?: () => void }) {
+  const { title = 'Something went wrong', message, onRetry } = props;
+  return (
+    <View style={styles.empty}>
+      <Text style={{ fontSize: 34 }}>⚠️</Text>
+      <Txt variant="h3" center>
+        {title}
+      </Txt>
+      {message ? (
+        <Txt variant="small" c={color.inkMuted} center>
+          {message}
+        </Txt>
+      ) : null}
+      {onRetry ? <Button title="Try again" variant="secondary" onPress={onRetry} /> : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: color.appBg },
   scrollContent: { padding: sp.lg, gap: sp.lg, paddingBottom: sp.xxl },
