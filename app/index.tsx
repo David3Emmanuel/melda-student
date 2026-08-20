@@ -74,7 +74,7 @@ export default function Login() {
             {error}
           </Txt>
         ) : null}
-        <Button title="Sign in" icon="→" loading={busy} onPress={submit} />
+        <Button title="Sign in" icon="next" loading={busy} onPress={submit} />
       </Card>
       <Txt variant="tiny" c={color.inkMuted} center>
         Teachers plan and review in the MELDA teacher app.

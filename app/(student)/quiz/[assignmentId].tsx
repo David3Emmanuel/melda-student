@@ -109,7 +109,7 @@ export default function Quiz() {
         <Txt variant="tiny" c={color.inkMuted}>
           MELDA shares how the whole class did with your teacher.
         </Txt>
-        <Button title="Try again" icon="↻" variant="secondary" onPress={retake} />
+        <Button title="Try again" icon="refresh" variant="secondary" onPress={retake} />
         <Button
           title="Back to my work"
           variant="ghost"
@@ -148,7 +148,7 @@ export default function Quiz() {
 
       <Button
         title="Submit answers"
-        icon="✓"
+        icon="check"
         loading={busy}
         disabled={!allAnswered}
         onPress={submit}

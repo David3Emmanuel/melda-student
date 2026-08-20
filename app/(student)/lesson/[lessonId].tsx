@@ -11,7 +11,17 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import type { Adaptation, LessonSection } from 'melda-shared';
 import { api } from '../../../src/api/client';
 import { useApi } from '../../../src/api/useApi';
-import { Badge, Button, Card, ErrorState, Loading, Screen, Txt } from '../../../src/ui/components';
+import {
+  Badge,
+  Button,
+  Card,
+  ErrorState,
+  Icon,
+  Loading,
+  Row,
+  Screen,
+  Txt,
+} from '../../../src/ui/components';
 import { adaptationLabel, color, sp, weight } from '../../../src/ui/tokens';
 
 const KIND_LABEL: Record<string, string> = {
@@ -70,9 +80,12 @@ function AdaptationNote({ label, body }: { label: string; body: string }) {
     <Card
       style={{ backgroundColor: color.accentSoft, borderColor: color.accentSoft, marginTop: sp.md }}
     >
-      <Txt variant="tiny" c={color.accentInk} w={weight.bold}>
-        ✨ MELDA - {label}
-      </Txt>
+      <Row gap={sp.xs}>
+        <Icon name="sparkle" size={12} color={color.accentInk} />
+        <Txt variant="tiny" c={color.accentInk} w={weight.bold}>
+          MELDA - {label}
+        </Txt>
+      </Row>
       <Txt variant="body" c={color.inkSecondary} style={{ marginTop: sp.xs }}>
         {body}
       </Txt>
@@ -122,13 +135,16 @@ function SectionCard(props: { section: LessonSection; lessonId: string; saved: A
       ))}
 
       {asked ? (
-        <Txt variant="small" c={color.accentInk} style={{ marginTop: sp.md }}>
-          ✓ MELDA let your teacher know. A simpler explanation will show up here.
-        </Txt>
+        <Row gap={sp.xs} style={{ marginTop: sp.md, alignItems: 'flex-start' }}>
+          <Icon name="check" size={16} color={color.accentInk} />
+          <Txt variant="small" c={color.accentInk} style={{ flex: 1 }}>
+            MELDA let your teacher know. A simpler explanation will show up here.
+          </Txt>
+        </Row>
       ) : (
         <Button
           title="I don't get this"
-          icon="🤔"
+          icon="question"
           variant="secondary"
           size="sm"
           loading={busy}

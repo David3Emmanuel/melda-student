@@ -14,6 +14,7 @@ import {
   Card,
   EmptyState,
   ErrorState,
+  Icon,
   Loading,
   Row,
   Screen,
@@ -54,7 +55,7 @@ export default function StudentHome() {
             <EmptyState
               title="No reviews yet"
               body="When your teacher sets one, it shows up here."
-              icon="📝"
+              icon="reviews"
             />
           ) : (
             data.assignments.map(({ assignment, submitted, scorePct }) => {
@@ -91,7 +92,7 @@ export default function StudentHome() {
                   </Row>
                   <Button
                     title={submitted ? 'Retake the review' : 'Start the review'}
-                    icon="✏️"
+                    icon="pencil"
                     size="sm"
                     style={{ marginTop: sp.md }}
                     onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
@@ -108,7 +109,7 @@ export default function StudentHome() {
             <EmptyState
               title="No lessons yet"
               body="Your teacher's published lessons will appear here."
-              icon="📚"
+              icon="book"
             />
           ) : (
             data.lessons.map((l) => (
@@ -118,9 +119,12 @@ export default function StudentHome() {
                   {l.summary}
                 </Txt>
                 {l.adaptations.length ? (
-                  <Txt variant="tiny" c={color.accentInk} style={{ marginTop: sp.sm }}>
-                    ✨ {l.adaptations.length} MELDA explanation{l.adaptations.length > 1 ? 's' : ''}
-                  </Txt>
+                  <Row gap={sp.xs} style={{ marginTop: sp.sm }}>
+                    <Icon name="sparkle" size={12} color={color.accentInk} />
+                    <Txt variant="tiny" c={color.accentInk}>
+                      {l.adaptations.length} MELDA explanation{l.adaptations.length > 1 ? 's' : ''}
+                    </Txt>
+                  </Row>
                 ) : null}
               </Card>
             ))

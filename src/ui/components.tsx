@@ -15,7 +15,39 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Feather from '@expo/vector-icons/Feather';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { color, font, radius, sp, type Tone, toneStyle, weight } from './tokens';
+
+// --- icons -------------------------------------------------------------------
+// Screens name icons by role, not glyph, so the set lives in one place. Feather
+// covers the UI chrome; `sparkle` is the MELDA/AI accent Feather lacks, so it
+// comes from Ionicons. Both ship with @expo/vector-icons and render as vectors on
+// web. A bad Feather name is a compile error (name is a strict union), so this map
+// is checked by `pnpm typecheck`.
+const FEATHER_ICONS = {
+  chart: 'bar-chart-2',
+  book: 'book-open',
+  reviews: 'file-text',
+  pencil: 'edit-3',
+  check: 'check',
+  success: 'check-circle',
+  plus: 'plus',
+  next: 'arrow-right',
+  refresh: 'rotate-ccw',
+  alert: 'alert-triangle',
+  inbox: 'inbox',
+  signal: 'radio',
+  question: 'help-circle',
+} as const;
+
+export type IconName = keyof typeof FEATHER_ICONS | 'sparkle';
+
+export function Icon(props: { name: IconName; size?: number; color?: string }) {
+  const { name, size = 18, color: c = color.ink } = props;
+  if (name === 'sparkle') return <Ionicons name="sparkles" size={size} color={c} />;
+  return <Feather name={FEATHER_ICONS[name]} size={size} color={c} />;
+}
 
 // --- text --------------------------------------------------------------------
 type TxtVariant = 'display' | 'h1' | 'h2' | 'h3' | 'body' | 'small' | 'tiny';
@@ -183,7 +215,7 @@ export function Button(props: {
   size?: 'md' | 'sm';
   loading?: boolean;
   disabled?: boolean;
-  icon?: string;
+  icon?: IconName;
   style?: ViewStyle;
 }) {
   const {
@@ -220,16 +252,18 @@ export function Button(props: {
       {loading ? (
         <ActivityIndicator color={fg} size="small" />
       ) : (
-        <Text
-          style={{
-            color: fg,
-            fontWeight: weight.semibold,
-            fontSize: size === 'sm' ? font.small : font.body,
-          }}
-        >
-          {icon ? `${icon}  ` : ''}
-          {title}
-        </Text>
+        <>
+          {icon ? <Icon name={icon} size={size === 'sm' ? 16 : 18} color={fg} /> : null}
+          <Text
+            style={{
+              color: fg,
+              fontWeight: weight.semibold,
+              fontSize: size === 'sm' ? font.small : font.body,
+            }}
+          >
+            {title}
+          </Text>
+        </>
       )}
     </Pressable>
   );
@@ -353,10 +387,10 @@ export function Loading(props: { label?: string }) {
 }
 
 // --- empty state -------------------------------------------------------------
-export function EmptyState(props: { title: string; body?: string; icon?: string }) {
+export function EmptyState(props: { title: string; body?: string; icon?: IconName }) {
   return (
     <View style={styles.empty}>
-      {props.icon ? <Text style={{ fontSize: 34 }}>{props.icon}</Text> : null}
+      {props.icon ? <Icon name={props.icon} size={40} color={color.inkMuted} /> : null}
       <Txt variant="h3" center>
         {props.title}
       </Txt>
@@ -377,7 +411,7 @@ export function ErrorState(props: { title?: string; message?: string; onRetry?: 
   const { title = 'Something went wrong', message, onRetry } = props;
   return (
     <View style={styles.empty}>
-      <Text style={{ fontSize: 34 }}>⚠️</Text>
+      <Icon name="alert" size={40} color={color.warnInk} />
       <Txt variant="h3" center>
         {title}
       </Txt>
@@ -426,6 +460,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    gap: sp.xs,
   },
   btnSm: { minHeight: 38, paddingHorizontal: sp.md, borderRadius: radius.sm },
   btnPrimary: { backgroundColor: color.accent },
