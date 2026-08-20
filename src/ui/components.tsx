@@ -19,6 +19,11 @@ import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { color, font, radius, sp, type Tone, toneStyle, weight } from './tokens';
 
+// react-native-web adds `hovered`/`focused` to the Pressable state at runtime,
+// but React Native's own type only declares `pressed`. Widen it here so screens
+// can read all three type-safely (they stay undefined on native).
+export type PressState = { pressed: boolean; hovered?: boolean; focused?: boolean };
+
 // --- icons -------------------------------------------------------------------
 // Screens name icons by role, not glyph, so the set lives in one place. Feather
 // covers the UI chrome; `sparkle` is the MELDA/AI accent Feather lacks, so it
@@ -95,8 +100,9 @@ export function Screen(props: {
   subtitle?: string;
   scroll?: boolean;
   right?: ReactNode;
+  maxWidth?: number;
 }) {
-  const { children, title, subtitle, scroll = true, right } = props;
+  const { children, title, subtitle, scroll = true, right, maxWidth = 760 } = props;
   const header =
     title != null ? (
       <View style={styles.header}>
@@ -112,24 +118,24 @@ export function Screen(props: {
       </View>
     ) : null;
 
+  // One centred column capped at maxWidth, so on the teacher's tablet/desktop the
+  // content stops stretching edge-to-edge into an unreadable ribbon. On phones the
+  // viewport is narrower than the cap, so width:100% wins and nothing changes.
   const body = (
-    <>
+    <View style={[styles.content, { maxWidth }, scroll ? null : { flex: 1 }]}>
       {header}
       {children}
-    </>
+    </View>
   );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       {scroll ? (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView contentContainerStyle={styles.scrollOuter} showsVerticalScrollIndicator={false}>
           {body}
         </ScrollView>
       ) : (
-        <View style={[styles.scrollContent, { flex: 1 }]}>{body}</View>
+        <View style={[styles.scrollOuter, { flex: 1 }]}>{body}</View>
       )}
     </SafeAreaView>
   );
@@ -162,7 +168,13 @@ export function Card(props: { children: ReactNode; onPress?: () => void; style?:
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
-        style={({ pressed }) => [styles.card, style, pressed ? styles.pressed : null]}
+        style={({ pressed, hovered, focused }: PressState) => [
+          styles.card,
+          style,
+          hovered ? styles.hovered : null,
+          focused ? styles.focused : null,
+          pressed ? styles.pressed : null,
+        ]}
       >
         {children}
       </Pressable>
@@ -247,7 +259,12 @@ export function Button(props: {
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
-      style={({ pressed }) => [...base, pressed && !isDisabled ? styles.pressed : null]}
+      style={({ pressed, hovered, focused }: PressState) => [
+        ...base,
+        !isDisabled && hovered ? styles.hovered : null,
+        !isDisabled && focused ? styles.focused : null,
+        pressed && !isDisabled ? styles.pressed : null,
+      ]}
     >
       {loading ? (
         <ActivityIndicator color={fg} size="small" />
@@ -361,7 +378,11 @@ export function BarRow(props: {
       accessible
       accessibilityRole="button"
       accessibilityLabel={`${label}: ${display ?? String(value)}${sub ? `, ${sub}` : ''}`}
-      style={({ pressed }) => (pressed ? styles.pressed : null)}
+      style={({ pressed, hovered, focused }: PressState) => [
+        hovered ? styles.hovered : null,
+        focused ? styles.focused : null,
+        pressed ? styles.pressed : null,
+      ]}
     >
       {inner}
     </Pressable>
@@ -427,7 +448,8 @@ export function ErrorState(props: { title?: string; message?: string; onRetry?: 
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: color.appBg },
-  scrollContent: { padding: sp.lg, gap: sp.lg, paddingBottom: sp.xxl },
+  scrollOuter: { padding: sp.lg, paddingBottom: sp.xxl, alignItems: 'center' },
+  content: { width: '100%', gap: sp.lg },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: sp.sm },
   card: {
     backgroundColor: color.card,
@@ -442,6 +464,11 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   pressed: { opacity: 0.7 },
+  // Web-only affordances (react-native-web): a light dim on hover and a keyboard
+  // focus ring. boxShadow follows the element's border-radius, so it hugs rounded
+  // cards and square bar rows alike, with no layout shift.
+  hovered: { opacity: 0.85 },
+  focused: { boxShadow: `0 0 0 2px ${color.accent}` },
   divider: { height: 1, backgroundColor: color.border },
   badge: {
     flexDirection: 'row',
