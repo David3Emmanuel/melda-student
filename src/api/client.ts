@@ -97,4 +97,16 @@ export const api = {
   // A learning signal (e.g. REQUEST_SIMPLER when a student asks for help). The
   // server scopes it to the student's class; this is what the teacher sees live.
   recordSignal: (body: RecordSignalRequest) => request<{ id: string }>('POST', '/signals', body),
+
+  // Study with MELDA: a question grounded in the lesson the student is reading.
+  // The server answers statelessly (no transcript stored) - the app keeps its own
+  // on-device history - and the Anthropic key never leaves the backend.
+  askMelda: (body: { lessonId: string; sectionId?: string; question: string }) =>
+    request<{ answer: string }>('POST', '/ai/ask', body),
+
+  // Save materials: a lesson the student bookmarks to find again on the Saved tab.
+  // The composite key on the server makes a repeat save idempotent.
+  saveLesson: (lessonId: string) => request<{ ok: true }>('POST', `/lessons/${lessonId}/save`),
+  unsaveLesson: (lessonId: string) => request<{ ok: true }>('DELETE', `/lessons/${lessonId}/save`),
+  savedLessons: () => request<Lesson[]>('GET', '/me/saved'),
 };

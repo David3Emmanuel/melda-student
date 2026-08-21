@@ -90,6 +90,33 @@ async function main() {
   ok(last!.url.endsWith('/signals'), 'recordSignal hits /signals');
   eq(JSON.parse(last!.body!).type, 'REQUEST_SIMPLER', 'the signal type rides in the body');
 
+  // 5b. study with MELDA: the ask posts the lesson-grounded question
+  stubFetch(200, { answer: 'Here is a simpler take.' });
+  const asked = await api.askMelda({ lessonId: 'l-1', sectionId: 'sec-1', question: 'why?' });
+  eq(last!.method, 'POST', 'askMelda uses POST');
+  ok(last!.url.endsWith('/ai/ask'), 'askMelda hits /ai/ask');
+  eq(JSON.parse(last!.body!).lessonId, 'l-1', 'ask body carries the lessonId');
+  eq(JSON.parse(last!.body!).question, 'why?', 'ask body carries the question');
+  eq(asked.answer, 'Here is a simpler take.', 'askMelda parses the answer');
+
+  // 5c. save materials: save/unsave a lesson and list the saved ones
+  stubFetch(201, { ok: true });
+  await api.saveLesson('l-1');
+  eq(last!.method, 'POST', 'saveLesson uses POST');
+  ok(last!.url.endsWith('/lessons/l-1/save'), 'saveLesson hits the lesson save path');
+  ok(last!.body === undefined, 'saveLesson sends no body');
+
+  stubFetch(200, { ok: true });
+  await api.unsaveLesson('l-1');
+  eq(last!.method, 'DELETE', 'unsaveLesson uses DELETE');
+  ok(last!.url.endsWith('/lessons/l-1/save'), 'unsaveLesson hits the lesson save path');
+
+  stubFetch(200, [{ id: 'l-1' }]);
+  const saved = await api.savedLessons();
+  eq(last!.method, 'GET', 'savedLessons uses GET');
+  ok(last!.url.endsWith('/me/saved'), 'savedLessons hits /me/saved');
+  eq(saved.length, 1, 'savedLessons parses the returned lessons');
+
   // 6. a non-2xx maps the server {error} into a thrown ApiError
   stubFetch(404, { error: 'assignment not found' });
   let thrown: unknown;

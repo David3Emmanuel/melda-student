@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "check:client": "tsx src/api/client.check.ts",
-    "check": "pnpm check:client",
+    "check:history": "tsx src/state/askHistory.check.ts",
+    "check": "pnpm check:client && pnpm check:history",
     "format": "prettier --write ."
   },
   "dependencies": {
