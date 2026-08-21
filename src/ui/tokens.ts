@@ -167,3 +167,15 @@ export const dueLabel = (
   if (days === 1) return { text: 'Due tomorrow', tone: 'warn', closed: false };
   return { text: `Due in ${days} days`, tone: 'neutral', closed: false };
 };
+
+/**
+ * Parse a user-typed integer and clamp it into [min, max], falling back to
+ * `fallback` when the text is not a number. The small numeric form inputs
+ * (question count, days a review stays open) run through this so a stray or
+ * empty keystroke never sends a NaN or a wild value to the backend.
+ */
+export const clampInt = (text: string, min: number, max: number, fallback: number): number => {
+  const n = parseInt(text, 10);
+  if (Number.isNaN(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+};

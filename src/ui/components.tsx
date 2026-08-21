@@ -10,6 +10,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   type TextStyle,
   View,
   type ViewStyle,
@@ -185,6 +186,58 @@ export function Card(props: { children: ReactNode; onPress?: () => void; style?:
 
 export function Divider() {
   return <View style={styles.divider} />;
+}
+
+// --- text input --------------------------------------------------------------
+// One field for every form in the app: an optional uppercase label above a
+// bordered input, single- or multi-line. Editable AI drafts and the topic/param
+// fields all render through this, so the input styling lives in one place.
+export function Input(props: {
+  value: string;
+  onChangeText: (text: string) => void;
+  label?: string;
+  placeholder?: string;
+  multiline?: boolean;
+  keyboardType?: 'default' | 'number-pad';
+  onSubmitEditing?: () => void;
+  style?: ViewStyle;
+}) {
+  const {
+    value,
+    onChangeText,
+    label,
+    placeholder,
+    multiline,
+    keyboardType,
+    onSubmitEditing,
+    style,
+  } = props;
+  return (
+    <View style={style}>
+      {label ? (
+        <Txt
+          variant="tiny"
+          c={color.inkMuted}
+          w={weight.semibold}
+          style={{ textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: sp.xs }}
+        >
+          {label}
+        </Txt>
+      ) : null}
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={color.inkMuted}
+        multiline={multiline}
+        keyboardType={keyboardType}
+        returnKeyType={onSubmitEditing ? 'done' : undefined}
+        onSubmitEditing={onSubmitEditing}
+        accessibilityLabel={label ?? placeholder}
+        style={[styles.input, multiline ? styles.inputMultiline : null]}
+      />
+    </View>
+  );
 }
 
 // --- avatar ------------------------------------------------------------------
@@ -470,6 +523,18 @@ const styles = StyleSheet.create({
   hovered: { opacity: 0.85 },
   focused: { boxShadow: `0 0 0 2px ${color.accent}` },
   divider: { height: 1, backgroundColor: color.border },
+  input: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: color.border,
+    borderRadius: radius.md,
+    paddingHorizontal: sp.md,
+    paddingVertical: sp.sm,
+    fontSize: font.body,
+    color: color.ink,
+    backgroundColor: color.appBg,
+  },
+  inputMultiline: { minHeight: 92, paddingTop: sp.sm, textAlignVertical: 'top' },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
