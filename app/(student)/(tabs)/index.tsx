@@ -5,22 +5,22 @@
 // submitted quiz sends them back.
 
 import { useRouter } from 'expo-router';
-import { api } from '../../src/api/client';
-import { useApi } from '../../src/api/useApi';
-import { useSession } from '../../src/state/store';
+import { api } from '../../../src/api/client';
+import { useApi } from '../../../src/api/useApi';
+import { LessonCard } from '../../../src/components/LessonCard';
+import { useSession } from '../../../src/state/store';
 import {
   Badge,
   Button,
   Card,
   EmptyState,
   ErrorState,
-  Icon,
   Loading,
   Row,
   Screen,
   Txt,
-} from '../../src/ui/components';
-import { color, dueLabel, sp, toneStyle, weight } from '../../src/ui/tokens';
+} from '../../../src/ui/components';
+import { color, dueLabel, sp, toneStyle, weight } from '../../../src/ui/tokens';
 
 export default function StudentHome() {
   const router = useRouter();
@@ -112,22 +112,7 @@ export default function StudentHome() {
               icon="book"
             />
           ) : (
-            data.lessons.map((l) => (
-              <Card key={l.id} onPress={() => router.push(`/(student)/lesson/${l.id}`)}>
-                <Txt variant="h3">{l.title}</Txt>
-                <Txt variant="small" c={color.inkMuted} numberOfLines={2} style={{ marginTop: 2 }}>
-                  {l.summary}
-                </Txt>
-                {l.adaptations.length ? (
-                  <Row gap={sp.xs} style={{ marginTop: sp.sm }}>
-                    <Icon name="sparkle" size={12} color={color.accentInk} />
-                    <Txt variant="tiny" c={color.accentInk}>
-                      {l.adaptations.length} MELDA explanation{l.adaptations.length > 1 ? 's' : ''}
-                    </Txt>
-                  </Row>
-                ) : null}
-              </Card>
-            ))
+            data.lessons.map((l) => <LessonCard key={l.id} lesson={l} />)
           )}
         </>
       ) : null}

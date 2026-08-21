@@ -45,6 +45,8 @@ const FEATHER_ICONS = {
   inbox: 'inbox',
   signal: 'radio',
   question: 'help-circle',
+  home: 'home',
+  bookmark: 'bookmark',
 } as const;
 
 export type IconName = keyof typeof FEATHER_ICONS | 'sparkle';

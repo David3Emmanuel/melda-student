@@ -3,8 +3,9 @@ import { useSession } from '../../src/state/store';
 import { color, weight } from '../../src/ui/tokens';
 
 // The student EXPERIENCE stack. Guards the whole surface: no token -> back to the
-// login screen. A styled native header gives pushed screens (lesson, quiz) a back
-// button; the home screen hides it and renders its own via <Screen>.
+// login screen. The (tabs) group (Home / Saved) owns its own tab-bar chrome, so it
+// hides this header; the pushed detail screens (lesson, quiz) sit ABOVE the bar and
+// get the styled native header with a back button, reachable from either tab.
 export default function StudentStack() {
   const token = useSession((s) => s.token);
   if (!token) return <Redirect href="/" />;
@@ -19,7 +20,7 @@ export default function StudentStack() {
         contentStyle: { backgroundColor: color.appBg },
       }}
     >
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
 }
