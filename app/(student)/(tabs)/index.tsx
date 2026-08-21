@@ -41,7 +41,7 @@ export default function StudentHome() {
   const right = <Button title="Sign out" variant="ghost" size="sm" onPress={signOut} />;
 
   return (
-    <Screen title={`Hi, ${firstName}`} subtitle={className} right={right}>
+    <Screen title={`Hi, ${firstName}`} subtitle={className} right={right} onRefresh={reload}>
       {loading && !data ? <Loading /> : null}
 
       {error ? (

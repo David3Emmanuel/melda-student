@@ -3,10 +3,11 @@
 // imported as a set. Screens should not need raw <View>/<Text> styling beyond
 // these.
 
-import { type ReactNode } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -104,8 +105,22 @@ export function Screen(props: {
   scroll?: boolean;
   right?: ReactNode;
   maxWidth?: number;
+  onRefresh?: () => Promise<unknown> | void;
 }) {
-  const { children, title, subtitle, scroll = true, right, maxWidth = 760 } = props;
+  const { children, title, subtitle, scroll = true, right, maxWidth = 760, onRefresh } = props;
+  const [refreshing, setRefreshing] = useState(false);
+  // Pull-to-refresh: run the screen's reload (useApi's, which resolves when the
+  // fetch lands) and hold the spinner until it does. On web the pull gesture is
+  // inert, so this is a native affordance; nothing renders when onRefresh is unset.
+  const handleRefresh = useCallback(async () => {
+    if (!onRefresh) return;
+    setRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [onRefresh]);
   const header =
     title != null ? (
       <View style={styles.header}>
@@ -134,7 +149,20 @@ export function Screen(props: {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       {scroll ? (
-        <ScrollView contentContainerStyle={styles.scrollOuter} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollOuter}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={color.accent}
+                colors={[color.accent]}
+              />
+            ) : undefined
+          }
+        >
           {body}
         </ScrollView>
       ) : (

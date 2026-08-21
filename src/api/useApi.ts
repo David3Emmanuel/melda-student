@@ -12,35 +12,47 @@ interface ApiState<T> {
   loading: boolean;
 }
 
-export function useApi<T>(fetcher: () => Promise<T>): ApiState<T> & { reload: () => void } {
+export function useApi<T>(
+  fetcher: () => Promise<T>,
+): ApiState<T> & { reload: () => Promise<void> } {
   const [state, setState] = useState<ApiState<T>>({ data: null, error: null, loading: true });
   // The fetcher is a fresh closure each render; keep the latest in a ref rather
   // than as a dependency. useFocusEffect re-runs on every focus, which is the
   // refresh we want, so nothing else needs to trigger a re-fetch.
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
+  // Flipped false when the screen blurs/unmounts, so a slow fetch that lands
+  // after we have navigated away never calls setState on a screen that is gone.
+  const aliveRef = useRef(true);
 
+  // Returns the fetch Promise so a pull-to-refresh (Screen's RefreshControl) can
+  // await it and keep the spinner up until the fresh data actually lands.
   const load = useCallback(() => {
-    let alive = true;
     setState((s) => ({ ...s, loading: true }));
-    fetcherRef
+    return fetcherRef
       .current()
       .then((data) => {
-        if (alive) setState({ data, error: null, loading: false });
+        if (aliveRef.current) setState({ data, error: null, loading: false });
       })
       .catch((err: unknown) => {
-        if (alive)
+        if (aliveRef.current)
           setState((s) => ({
             ...s,
             error: err instanceof Error ? err.message : 'Something went wrong',
             loading: false,
           }));
       });
-    return () => {
-      alive = false;
-    };
   }, []);
 
-  useFocusEffect(load);
+  useFocusEffect(
+    useCallback(() => {
+      aliveRef.current = true;
+      void load();
+      return () => {
+        aliveRef.current = false;
+      };
+    }, [load]),
+  );
+
   return { ...state, reload: load };
 }

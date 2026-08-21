@@ -12,7 +12,7 @@ export default function SavedLessons() {
   const { data, loading, error, reload } = useApi(() => api.savedLessons());
 
   return (
-    <Screen title="Saved">
+    <Screen title="Saved" onRefresh={reload}>
       {loading && !data ? <Loading /> : null}
 
       {error ? (
