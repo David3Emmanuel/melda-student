@@ -23,8 +23,8 @@ import {
   Screen,
   StatTile,
   Txt,
-} from '../../../src/ui/components';
-import { color, masteryTone, radius, sp, weight } from '../../../src/ui/tokens';
+} from 'melda-shared/ui/components';
+import { color, masteryTone, radius, sp, weight } from 'melda-shared/ui/tokens';
 
 export default function Quiz() {
   const { assignmentId } = useLocalSearchParams<{ assignmentId: string }>();

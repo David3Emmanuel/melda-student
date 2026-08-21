@@ -1,6 +1,6 @@
 import { Redirect, Stack } from 'expo-router';
 import { useSession } from '../../src/state/store';
-import { color, weight } from '../../src/ui/tokens';
+import { color, weight } from 'melda-shared/ui/tokens';
 
 // The student EXPERIENCE stack. Guards the whole surface: no token -> back to the
 // login screen. The (tabs) group (Home / Saved) owns its own tab-bar chrome, so it

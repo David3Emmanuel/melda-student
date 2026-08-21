@@ -30,8 +30,8 @@ importers:
         specifier: ~3.0.9
         version: 3.0.9(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0)
       melda-shared:
-        specifier: github:David3Emmanuel/melda-shared#v0.1.0
-        version: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/c199d4e74fb012725467c1bdb75ff2f75251b4d2
+        specifier: github:David3Emmanuel/melda-shared#v0.2.0
+        version: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/600deb4ce086c00ed9e5dccb371a98e735e494e6(@expo/vector-icons@15.1.1(expo-font@14.0.12(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -2330,9 +2330,23 @@ packages:
   marky@1.3.0:
     resolution: {integrity: sha512-ocnPZQLNpvbedwTy9kNrQEsknEfgvcLMvOtz3sFeWApDq1MXH1TqkCIx58xlpESsfwQOnuBO9beyQuNGzVvuhQ==}
 
-  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/c199d4e74fb012725467c1bdb75ff2f75251b4d2:
-    resolution: {tarball: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/c199d4e74fb012725467c1bdb75ff2f75251b4d2}
-    version: 0.1.0
+  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/600deb4ce086c00ed9e5dccb371a98e735e494e6:
+    resolution: {tarball: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/600deb4ce086c00ed9e5dccb371a98e735e494e6}
+    version: 0.2.0
+    peerDependencies:
+      '@expo/vector-icons': '>=15'
+      react: '>=19'
+      react-native: '>=0.81'
+      react-native-safe-area-context: '>=5'
+    peerDependenciesMeta:
+      '@expo/vector-icons':
+        optional: true
+      react:
+        optional: true
+      react-native:
+        optional: true
+      react-native-safe-area-context:
+        optional: true
 
   memoize-one@5.2.1:
     resolution: {integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==}
@@ -6019,7 +6033,12 @@ snapshots:
 
   marky@1.3.0: {}
 
-  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/c199d4e74fb012725467c1bdb75ff2f75251b4d2: {}
+  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/600deb4ce086c00ed9e5dccb371a98e735e494e6(@expo/vector-icons@15.1.1(expo-font@14.0.12(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0):
+    optionalDependencies:
+      '@expo/vector-icons': 15.1.1(expo-font@14.0.12(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-native: 0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0)
+      react-native-safe-area-context: 5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0)
 
   memoize-one@5.2.1: {}
 

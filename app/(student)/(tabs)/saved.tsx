@@ -6,7 +6,7 @@
 import { api } from '../../../src/api/client';
 import { useApi } from '../../../src/api/useApi';
 import { LessonCard } from '../../../src/components/LessonCard';
-import { EmptyState, ErrorState, Loading, Screen } from '../../../src/ui/components';
+import { EmptyState, ErrorState, Loading, Screen } from 'melda-shared/ui/components';
 
 export default function SavedLessons() {
   const { data, loading, error, reload } = useApi(() => api.savedLessons());

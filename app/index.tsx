@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { Button, Card, Screen, Txt } from '../src/ui/components';
-import { color, font, radius, sp, weight } from '../src/ui/tokens';
+import { Button, Card, Screen, Txt } from 'melda-shared/ui/components';
+import { color, font, radius, sp, weight } from 'melda-shared/ui/tokens';
 import { api, ApiError } from '../src/api/client';
 import { useSession } from '../src/state/store';
 

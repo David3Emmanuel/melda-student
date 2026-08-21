@@ -27,8 +27,8 @@ import {
   Row,
   Screen,
   Txt,
-} from '../../../src/ui/components';
-import { adaptationLabel, color, sp, weight } from '../../../src/ui/tokens';
+} from 'melda-shared/ui/components';
+import { adaptationLabel, color, sp, weight } from 'melda-shared/ui/tokens';
 
 const KIND_LABEL: Record<string, string> = {
   explanation: 'Explanation',

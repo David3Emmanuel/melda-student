@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Loading } from '../src/ui/components';
+import { Loading } from 'melda-shared/ui/components';
 import { useSession } from '../src/state/store';
 
 // Root shell. Before rendering any route we hydrate the saved session (JWT) from

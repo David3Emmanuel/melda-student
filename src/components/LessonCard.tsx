@@ -5,8 +5,8 @@
 
 import { useRouter } from 'expo-router';
 import type { Lesson } from 'melda-shared';
-import { Card, Icon, Row, Txt } from '../ui/components';
-import { color, sp } from '../ui/tokens';
+import { Card, Icon, Row, Txt } from 'melda-shared/ui/components';
+import { color, sp } from 'melda-shared/ui/tokens';
 
 export function LessonCard({ lesson }: { lesson: Lesson }) {
   const router = useRouter();
