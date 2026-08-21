@@ -2,21 +2,27 @@
 // teacher (with MELDA) has already saved for it. If a section still doesn't land,
 // "I don't get this" posts a REQUEST_SIMPLER signal (POST /signals) - the exact
 // record the teacher sees live on their dashboard, and what prompts them to add
-// an adaptation here. On-demand AI is a teacher-only feature (the key and its
-// cost stay on the server), so the student asks and the help comes back through
-// the teacher, not straight from the model.
+// an adaptation here.
+//
+// Two more things live here: a Save toggle (bookmark the lesson to the Saved tab)
+// and "Study with MELDA" at the bottom - an ask box grounded in this lesson. The
+// ask is proxied through the backend (the Anthropic key never leaves the server)
+// and answered statelessly; the Q&A transcript is kept only on this device.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import type { Adaptation, LessonSection } from 'melda-shared';
 import { api } from '../../../src/api/client';
 import { useApi } from '../../../src/api/useApi';
+import { appendTurn, loadHistory, saveHistory, type AskTurn } from '../../../src/state/askHistory';
 import {
   Badge,
   Button,
   Card,
   ErrorState,
   Icon,
+  Input,
   Loading,
   Row,
   Screen,
@@ -60,6 +66,9 @@ export default function LessonReader() {
   return (
     <Screen>
       <Stack.Screen options={{ title: lesson.title }} />
+      <Row style={{ justifyContent: 'flex-end' }}>
+        <SaveToggle lessonId={lesson.id} />
+      </Row>
       <Txt variant="body" c={color.inkSecondary}>
         {lesson.summary}
       </Txt>
@@ -71,6 +80,7 @@ export default function LessonReader() {
           saved={lesson.adaptations.filter((a) => a.sectionId === section.id)}
         />
       ))}
+      <StudyWithMelda lessonId={lesson.id} />
     </Screen>
   );
 }
@@ -152,6 +162,150 @@ function SectionCard(props: { section: LessonSection; lessonId: string; saved: A
           onPress={askForHelp}
         />
       )}
+      {failed ? (
+        <Txt variant="small" c={color.struggle} style={{ marginTop: sp.sm }}>
+          {failed}
+        </Txt>
+      ) : null}
+    </Card>
+  );
+}
+
+// The Save/Saved toggle. Loads its state once from the student's saved list, then
+// flips optimistically and reverts if the write fails. The label carries the state
+// ("Saved" vs "Save lesson"), so it never relies on colour alone.
+function SaveToggle({ lessonId }: { lessonId: string }) {
+  const [saved, setSaved] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .savedLessons()
+      .then((ls) => {
+        if (alive) setSaved(ls.some((l) => l.id === lessonId));
+      })
+      .catch(() => {
+        if (alive) setSaved(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [lessonId]);
+
+  const toggle = async () => {
+    if (saved === null || busy) return;
+    const next = !saved;
+    setBusy(true);
+    setSaved(next); // optimistic
+    try {
+      if (next) await api.saveLesson(lessonId);
+      else await api.unsaveLesson(lessonId);
+    } catch {
+      setSaved(!next); // the write failed - put the toggle back
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Button
+      title={saved ? 'Saved' : 'Save lesson'}
+      icon="bookmark"
+      variant={saved ? 'primary' : 'secondary'}
+      size="sm"
+      loading={busy}
+      disabled={saved === null}
+      onPress={toggle}
+    />
+  );
+}
+
+// "Study with MELDA": one ask box grounded in this lesson, with the Q&A history
+// kept on THIS device (loadHistory / saveHistory) - never in the server DB. The
+// server answers each ask statelessly, so this transcript is the only memory of
+// what was asked.
+function StudyWithMelda({ lessonId }: { lessonId: string }) {
+  const [history, setHistory] = useState<AskTurn[]>([]);
+  const [question, setQuestion] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    loadHistory(lessonId).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [lessonId]);
+
+  const ask = async () => {
+    const q = question.trim();
+    if (!q || busy) return;
+    setBusy(true);
+    setFailed(null);
+    try {
+      const { answer } = await api.askMelda({ lessonId, question: q });
+      const next = appendTurn(history, { question: q, answer });
+      setHistory(next);
+      setQuestion('');
+      void saveHistory(lessonId, next);
+    } catch (e) {
+      setFailed(e instanceof Error ? e.message : 'Could not reach MELDA. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card style={{ backgroundColor: color.accentSoft, borderColor: color.accentSoft }}>
+      <Row gap={sp.xs}>
+        <Icon name="sparkle" size={16} color={color.accentInk} />
+        <Txt variant="h3" c={color.accentInk}>
+          Study with MELDA
+        </Txt>
+      </Row>
+      <Txt variant="small" c={color.inkSecondary} style={{ marginTop: sp.xs }}>
+        Ask anything about this lesson. MELDA answers from what you&apos;re reading.
+      </Txt>
+
+      {history.map((turn, i) => (
+        <View key={i} style={{ marginTop: sp.md, gap: sp.xs }}>
+          <Txt variant="small" w={weight.semibold}>
+            You: {turn.question}
+          </Txt>
+          <Card style={{ backgroundColor: color.card }}>
+            <Row gap={sp.xs} style={{ marginBottom: sp.xs }}>
+              <Icon name="sparkle" size={12} color={color.accentInk} />
+              <Txt variant="tiny" c={color.accentInk} w={weight.bold}>
+                MELDA
+              </Txt>
+            </Row>
+            <Txt variant="body" c={color.inkSecondary}>
+              {turn.answer}
+            </Txt>
+          </Card>
+        </View>
+      ))}
+
+      <Input
+        value={question}
+        onChangeText={setQuestion}
+        placeholder="e.g. Can you explain this more simply?"
+        multiline
+        onSubmitEditing={ask}
+        style={{ marginTop: sp.md }}
+      />
+      <Button
+        title="Ask MELDA"
+        icon="sparkle"
+        loading={busy}
+        disabled={!question.trim()}
+        style={{ marginTop: sp.sm }}
+        onPress={ask}
+      />
       {failed ? (
         <Txt variant="small" c={color.struggle} style={{ marginTop: sp.sm }}>
           {failed}
