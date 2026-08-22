@@ -22,7 +22,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       {hydrated ? (
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false, title: 'MELDA Student' }} />
       ) : (
         <Loading label="Loading MELDA" />
       )}

@@ -25,7 +25,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "single",
       "name": "MELDA Student",
       "shortName": "MELDA Student",
       "themeColor": "#1439FF",
