@@ -8,6 +8,11 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4F46E5"
+    },
     "android": {
       "package": "com.melda.student",
       "adaptiveIcon": {
@@ -20,7 +25,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "single",
+      "output": "static",
       "name": "MELDA Student",
       "shortName": "MELDA Student",
       "themeColor": "#4F46E5",
