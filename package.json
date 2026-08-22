@@ -1,6 +1,7 @@
 {
   "name": "melda-student",
   "version": "0.1.0",
+  "packageManager": "pnpm@10.30.3",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
