@@ -8,7 +8,9 @@ import { color, weight } from 'melda-shared/ui/tokens';
 // get the styled native header with a back button, reachable from either tab.
 export default function StudentStack() {
   const token = useSession((s) => s.token);
+  const currentClass = useSession((s) => s.currentClass);
   if (!token) return <Redirect href="/" />;
+  if (!currentClass) return <Redirect href="/join-class" />;
 
   return (
     <Stack

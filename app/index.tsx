@@ -1,19 +1,22 @@
 import { useState } from 'react';
+import { Pressable } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { Button, Card, Input, Screen, Txt } from 'melda-shared/ui/components';
-import { color, sp } from 'melda-shared/ui/tokens';
+import { color, sp, weight } from 'melda-shared/ui/tokens';
 import { api, ApiError } from '../src/api/client';
 import { useSession } from '../src/state/store';
 
-// The front door of the student app. MELDA is three separate processes - this app,
-// the teacher app, and the backend that owns the shared data - so a student signs
-// in here and lands on their own learning home. A live session skips straight through.
+// The front door of the student app. Sign in with an existing account, or create
+// one (production is seeded with nothing). A live session skips straight through;
+// a signed-in student with no class yet lands on the join-code flow.
 export default function Login() {
   const token = useSession((s) => s.token);
   const signIn = useSession((s) => s.signIn);
   const signOut = useSession((s) => s.signOut);
   const router = useRouter();
 
+  const [mode, setMode] = useState<'in' | 'up'>('in');
+  const [name, setName] = useState('');
   // Prefilled with the backend's seeded demo student so a reviewer signs in with
   // one tap. Student logins are <id>@melda.africa; see melda-backend's seed.
   const [email, setEmail] = useState('s1@melda.africa');
@@ -23,15 +26,30 @@ export default function Login() {
 
   if (token) return <Redirect href="/(student)" />;
 
+  const switchMode = () => {
+    setError(null);
+    if (mode === 'in') {
+      setMode('up');
+      setEmail('');
+      setPassword('');
+    } else {
+      setMode('in');
+      setEmail('s1@melda.africa');
+      setPassword('melda');
+    }
+  };
+
   const submit = async () => {
     setBusy(true);
     setError(null);
     try {
-      const auth = await api.login({ email: email.trim(), password, role: 'student' });
+      const auth =
+        mode === 'in'
+          ? await api.login({ email: email.trim(), password, role: 'student' })
+          : await api.signup({ name: name.trim(), email: email.trim(), password, role: 'student' });
       const klass = await signIn(auth);
       if (!klass) {
-        signOut();
-        setError('This account is not enrolled in any class yet.');
+        router.replace('/join-class');
         return;
       }
       router.replace('/(student)');
@@ -51,7 +69,17 @@ export default function Login() {
   return (
     <Screen title="MELDA" subtitle="Your learning companion">
       <Card style={{ gap: sp.md }}>
-        <Txt variant="h3">Student sign in</Txt>
+        <Txt variant="h3">{mode === 'in' ? 'Student sign in' : 'Create a student account'}</Txt>
+        {mode === 'up' ? (
+          <Input
+            label="Name"
+            value={name}
+            onChangeText={setName}
+            placeholder="Your name"
+            autoComplete="name"
+            editable={!busy}
+          />
+        ) : null}
         <Input
           label="Email"
           value={email}
@@ -68,9 +96,10 @@ export default function Login() {
           label="Password"
           value={password}
           onChangeText={setPassword}
+          placeholder={mode === 'up' ? 'at least 6 characters' : undefined}
           secureTextEntry
-          autoComplete="current-password"
-          textContentType="password"
+          autoComplete={mode === 'up' ? 'new-password' : 'current-password'}
+          textContentType={mode === 'up' ? 'newPassword' : 'password'}
           editable={!busy}
         />
         {error ? (
@@ -78,7 +107,18 @@ export default function Login() {
             {error}
           </Txt>
         ) : null}
-        <Button title="Sign in" icon="next" loading={busy} onPress={submit} />
+        <Button
+          title={mode === 'in' ? 'Sign in' : 'Create account'}
+          icon="next"
+          loading={busy}
+          disabled={mode === 'up' && (!name.trim() || !email.trim() || !password)}
+          onPress={submit}
+        />
+        <Pressable onPress={switchMode} accessibilityRole="button">
+          <Txt variant="small" c={color.accent} w={weight.semibold}>
+            {mode === 'in' ? 'New here? Create an account' : 'Have an account? Sign in'}
+          </Txt>
+        </Pressable>
       </Card>
       <Txt variant="tiny" c={color.inkMuted} center>
         Teachers plan and review in the MELDA teacher app.

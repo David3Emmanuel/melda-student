@@ -12,10 +12,12 @@
 import type {
   AuthResponse,
   ClassCard,
+  JoinClassRequest,
   Lesson,
   LoginRequest,
   RecordSignalRequest,
   Selections,
+  SignupRequest,
   StudentAssignment,
   StudentLesson,
   SubmitAssignmentResponse,
@@ -73,8 +75,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 export const api = {
   login: (body: LoginRequest) => request<AuthResponse>('POST', '/auth/login', body),
+  signup: (body: SignupRequest) => request<AuthResponse>('POST', '/auth/signup', body),
 
   myClasses: () => request<ClassCard[]>('GET', '/me/classes'),
+
+  joinClass: (body: JoinClassRequest) => request<ClassCard>('POST', '/classes/join', body),
 
   // The backend returns only published lessons to a student, and the single
   // lesson read carries this student's saved-state alongside the lesson itself.
