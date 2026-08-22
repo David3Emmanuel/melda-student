@@ -1,7 +1,16 @@
 import { useState } from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { Button, Card, Input, Screen, Txt } from 'melda-shared/ui/components';
+import { SvgXml } from 'react-native-svg';
+import {
+  Button,
+  Card,
+  Input,
+  LOGIN_MOTIF_XML,
+  Screen,
+  Txt,
+  Wordmark,
+} from 'melda-shared/ui/components';
 import { color, sp, weight } from 'melda-shared/ui/tokens';
 import { api, ApiError } from '../src/api/client';
 import { useSession } from '../src/state/store';
@@ -67,7 +76,13 @@ export default function Login() {
   };
 
   return (
-    <Screen title="MELDA" subtitle="Your learning companion">
+    <Screen>
+      <View style={{ alignItems: 'center', gap: sp.xs }}>
+        <Wordmark width={176} />
+        <Txt variant="small" c={color.inkMuted}>
+          Your learning companion
+        </Txt>
+      </View>
       <Card style={{ gap: sp.md }}>
         <Txt variant="h3">{mode === 'in' ? 'Student sign in' : 'Create a student account'}</Txt>
         {mode === 'up' ? (
@@ -123,6 +138,9 @@ export default function Login() {
       <Txt variant="tiny" c={color.inkMuted} center>
         Teachers plan and review in the MELDA teacher app.
       </Txt>
+      <View style={{ alignItems: 'center', paddingTop: sp.md }}>
+        <SvgXml xml={LOGIN_MOTIF_XML} width={150} height={86} opacity={0.18} />
+      </View>
     </Screen>
   );
 }
