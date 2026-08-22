@@ -6,7 +6,8 @@
 import { api } from '../../../src/api/client';
 import { useApi } from '../../../src/api/useApi';
 import { LessonCard } from '../../../src/components/LessonCard';
-import { EmptyState, ErrorState, Loading, Screen } from 'melda-shared/ui/components';
+import { EmptyState, ErrorState, Loading, Screen, Txt } from 'melda-shared/ui/components';
+import { color } from 'melda-shared/ui/tokens';
 
 export default function SavedLessons() {
   const { data, loading, error, reload } = useApi(() => api.savedLessons());
@@ -15,8 +16,13 @@ export default function SavedLessons() {
     <Screen title="Saved" onRefresh={reload}>
       {loading && !data ? <Loading /> : null}
 
-      {error ? (
+      {error && !data ? (
         <ErrorState title="Could not load your saved lessons" message={error} onRetry={reload} />
+      ) : null}
+      {error && data ? (
+        <Txt variant="small" c={color.warnInk}>
+          Couldn't refresh. Showing your last saved lessons.
+        </Txt>
       ) : null}
 
       {data ? (

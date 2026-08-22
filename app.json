@@ -7,15 +7,25 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "android": {
-      "package": "com.melda.student"
+      "package": "com.melda.student",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4F46E5"
+      }
     },
     "ios": {
       "supportsTablet": true
     },
     "web": {
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "name": "MELDA Student",
+      "shortName": "MELDA Student",
+      "themeColor": "#4F46E5",
+      "backgroundColor": "#F4F5F7",
+      "favicon": "./assets/favicon.png"
     },
     "plugins": ["expo-router"]
   }

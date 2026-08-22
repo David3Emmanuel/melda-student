@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
-import { Button, Card, Screen, Txt } from 'melda-shared/ui/components';
-import { color, font, radius, sp, weight } from 'melda-shared/ui/tokens';
+import { Button, Card, Input, Screen, Txt } from 'melda-shared/ui/components';
+import { color, sp } from 'melda-shared/ui/tokens';
 import { api, ApiError } from '../src/api/client';
 import { useSession } from '../src/state/store';
 
@@ -53,20 +52,25 @@ export default function Login() {
     <Screen title="MELDA" subtitle="Your learning companion">
       <Card style={{ gap: sp.md }}>
         <Txt variant="h3">Student sign in</Txt>
-        <Field
+        <Input
           label="Email"
           value={email}
           onChangeText={setEmail}
+          placeholder="you@melda.africa"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
+          autoComplete="email"
+          textContentType="emailAddress"
           editable={!busy}
         />
-        <Field
+        <Input
           label="Password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoComplete="current-password"
+          textContentType="password"
           editable={!busy}
         />
         {error ? (
@@ -82,34 +86,3 @@ export default function Login() {
     </Screen>
   );
 }
-
-// A labelled text field. Only login needs inputs in this app, so it stays local
-// rather than joining the shared UI kit.
-function Field({ label, ...rest }: { label: string } & TextInputProps) {
-  return (
-    <View style={{ gap: 6 }}>
-      <Txt
-        variant="tiny"
-        c={color.inkMuted}
-        w={weight.semibold}
-        style={{ textTransform: 'uppercase', letterSpacing: 0.5 }}
-      >
-        {label}
-      </Txt>
-      <TextInput {...rest} placeholderTextColor={color.inkMuted} style={styles.input} />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  input: {
-    borderWidth: 1,
-    borderColor: color.border,
-    borderRadius: radius.md,
-    backgroundColor: color.appBg,
-    paddingHorizontal: sp.md,
-    minHeight: 48,
-    color: color.ink,
-    fontSize: font.body,
-  },
-});

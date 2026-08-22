@@ -32,3 +32,4 @@ yarn-error.*
 # Env
 .env
 .env*.local
+.export-check/

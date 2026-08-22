@@ -77,12 +77,13 @@ async function main() {
   ok(last!.url.endsWith('/classes/class-1/assignments'), 'assignments builds the class path');
 
   // 4. submitting posts the selections under the assignment
-  stubFetch(201, { submitted: true, scorePct: 80 });
+  stubFetch(201, { submitted: true, scorePct: 80, topicsToReview: ['Ionic Bonding'] });
   const result = await api.submitAssignment('a-1', { q1: 0, q2: 2 });
   eq(last!.method, 'POST', 'submit uses POST');
   ok(last!.url.endsWith('/assignments/a-1/submissions'), 'submit hits the submissions path');
   eq(JSON.parse(last!.body!).selections.q2, 2, 'submit body wraps the selections');
   eq(result.scorePct, 80, 'submit parses the server-graded score');
+  eq(result.topicsToReview[0], 'Ionic Bonding', 'submit parses the topics to review');
 
   // 5. a help request posts a learning signal
   stubFetch(201, { id: 'sig-1' });

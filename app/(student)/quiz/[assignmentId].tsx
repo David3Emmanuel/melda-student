@@ -1,13 +1,13 @@
 // The student's quiz. The paper arrives with the answer key stripped
 // (redactAssignment on the server), so grading happens server-side: the student
-// picks answers, submits, and the backend returns their score. A submitted review
-// opens straight to that score with the option to try again.
+// picks answers, submits, and the backend returns their score plus the concepts
+// to re-study ("topics to review" - names only, the key never leaves the
+// server). A submitted review opens straight to that score with the option to
+// try again, and an in-progress paper is guarded against a fat-fingered back.
 //
-// Deliberate simplification: the result shows the overall score only, not a
-// per-question right/wrong breakdown. The answer key never leaves the server, so
-// the client has nothing to mark against. Ceiling: no per-question feedback for
-// the student; upgrade path is a graded-review endpoint that returns each answer's
-// correctness (still without leaking the key for un-submitted papers).
+// Deliberate simplification: still no per-question right/wrong breakdown. The
+// client never sees the key, so it has nothing to mark against; the topics hint
+// is the answer-independent view of what went wrong.
 
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -15,11 +15,14 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import type { Question, Selections } from 'melda-shared';
 import { api, ApiError } from '../../../src/api/client';
 import { useApi } from '../../../src/api/useApi';
+import { useUnsavedGuard } from '../../../src/hooks/useUnsavedGuard';
 import {
+  Badge,
   Button,
   Card,
   ErrorState,
   Loading,
+  Row,
   Screen,
   StatTile,
   Txt,
@@ -33,9 +36,20 @@ export default function Quiz() {
 
   const [selections, setSelections] = useState<Selections>({});
   const [localScore, setLocalScore] = useState<number | null>(null);
+  const [localTopics, setLocalTopics] = useState<string[] | null>(null);
+  const [lastScore, setLastScore] = useState<number | null>(null);
   const [retaking, setRetaking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
+
+  // The score to display: the one just earned, or the stored one for an
+  // already-submitted paper (unless the student chose to retake).
+  const shownScore = localScore ?? (data?.submitted && !retaking ? data.scorePct : null);
+
+  // Unsaved-guard while the student has answered something they haven't
+  // submitted (a fresh unanswered paper and the result view are free to leave).
+  const answerable = data?.assignment.questions.filter((q) => q.choices?.length) ?? [];
+  useUnsavedGuard(shownScore === null && answerable.some((q) => selections[q.id] !== undefined));
 
   if (loading && !data) {
     return (
@@ -60,9 +74,6 @@ export default function Quiz() {
   }
 
   const { assignment } = data;
-  // The score to display: the one just earned, or the stored one for an
-  // already-submitted paper (unless the student chose to retake).
-  const shownScore = localScore ?? (data.submitted && !retaking ? data.scorePct : null);
 
   const submit = async () => {
     setBusy(true);
@@ -70,6 +81,7 @@ export default function Quiz() {
     try {
       const res = await api.submitAssignment(assignmentId, selections);
       setLocalScore(res.scorePct);
+      setLocalTopics(res.topicsToReview);
       setRetaking(false);
     } catch (e) {
       setFailed(
@@ -83,13 +95,19 @@ export default function Quiz() {
   };
 
   const retake = () => {
+    setLastScore(shownScore);
     setSelections({});
     setLocalScore(null);
+    setLocalTopics(null);
     setRetaking(true);
   };
 
   if (shownScore !== null) {
     const mastery = masteryTone(shownScore);
+    // Fresh submissions carry their topics in the response; a stored paper
+    // carries them on the assignment read (server-computed, so re-opening a
+    // result screen never leaks the key either).
+    const topics = localTopics ?? (data.submitted && !retaking ? (data.topicsToReview ?? []) : []);
     return (
       <Screen>
         <Stack.Screen options={{ title: assignment.title }} />
@@ -106,6 +124,21 @@ export default function Quiz() {
               ? 'Good start. Try it again to lock it in.'
               : "That's okay. Give it another go, and tell your teacher which parts are hard."}
         </Txt>
+        {topics.length ? (
+          <Card>
+            <Txt variant="small" w={weight.semibold}>
+              Topics to review
+            </Txt>
+            <Txt variant="small" c={color.inkMuted} style={{ marginTop: sp.xs }}>
+              Your missed questions were about:
+            </Txt>
+            <Row wrap gap={sp.xs} style={{ marginTop: sp.sm }}>
+              {topics.map((t) => (
+                <Badge key={t} label={t} tone="warn" />
+              ))}
+            </Row>
+          </Card>
+        ) : null}
         <Txt variant="tiny" c={color.inkMuted}>
           MELDA shares how the whole class did with your teacher.
         </Txt>
@@ -119,7 +152,6 @@ export default function Quiz() {
     );
   }
 
-  const answerable = assignment.questions.filter((q) => q.choices?.length);
   const allAnswered = answerable.every((q) => selections[q.id] !== undefined);
 
   return (
@@ -129,6 +161,11 @@ export default function Quiz() {
         {assignment.questions.length} question{assignment.questions.length === 1 ? '' : 's'} · pick
         the best answer.
       </Txt>
+      {lastScore !== null ? (
+        <Txt variant="small" c={color.inkMuted}>
+          Your last score was {lastScore}%.
+        </Txt>
+      ) : null}
 
       {assignment.questions.map((q, i) => (
         <QuestionCard
@@ -179,11 +216,19 @@ function QuestionCard(props: {
       >
         Question {index + 1}
       </Txt>
-      <Txt variant="h3" style={{ marginTop: sp.xs }}>
+      <Txt variant="h3" nativeID={`q-${q.id}-prompt`} style={{ marginTop: sp.xs }}>
         {q.prompt}
       </Txt>
       {q.choices?.length ? (
-        <View style={{ gap: sp.sm, marginTop: sp.md }}>
+        // The choices of one question are a radiogroup named by its prompt, and
+        // each choice carries aria-checked (react-native-web drops the legacy
+        // accessibilityState mapping), so a screen reader can tell which answer
+        // is picked.
+        <View
+          accessibilityRole="radiogroup"
+          aria-labelledby={`q-${q.id}-prompt`}
+          style={{ gap: sp.sm, marginTop: sp.md }}
+        >
           {q.choices.map((choice, ci) => (
             <Choice
               key={ci}
@@ -211,6 +256,7 @@ function Choice(props: { label: string; selected: boolean; onPress: () => void }
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityLabel={label}
+      aria-checked={selected}
       accessibilityState={{ checked: selected }}
       style={{
         flexDirection: 'row',

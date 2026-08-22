@@ -15,6 +15,7 @@ import {
   Card,
   EmptyState,
   ErrorState,
+  Icon,
   Loading,
   Row,
   Screen,
@@ -44,8 +45,13 @@ export default function StudentHome() {
     <Screen title={`Hi, ${firstName}`} subtitle={className} right={right} onRefresh={reload}>
       {loading && !data ? <Loading /> : null}
 
-      {error ? (
+      {error && !data ? (
         <ErrorState title="Could not load your work" message={error} onRetry={reload} />
+      ) : null}
+      {error && data ? (
+        <Txt variant="small" c={color.warnInk}>
+          Couldn't refresh. Showing your latest work.
+        </Txt>
       ) : null}
 
       {data ? (
@@ -58,48 +64,56 @@ export default function StudentHome() {
               icon="reviews"
             />
           ) : (
-            data.assignments.map(({ assignment, submitted, scorePct }) => {
-              const due = dueLabel(assignment.dueAt);
-              return (
-                <Card
-                  key={assignment.id}
-                  onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
-                >
-                  <Row style={{ justifyContent: 'space-between' }}>
-                    <Badge
-                      label={submitted ? 'Submitted' : 'To do'}
-                      tone={submitted ? 'ok' : 'warn'}
-                      dot
-                    />
-                    {submitted && scorePct !== null ? (
-                      <Txt variant="tiny" c={color.inkMuted}>
-                        Scored {scorePct}%
-                      </Txt>
-                    ) : null}
-                  </Row>
-                  <Txt variant="h3" style={{ marginTop: sp.sm }}>
-                    {assignment.title}
-                  </Txt>
-                  <Row style={{ justifyContent: 'space-between', marginTop: 2 }}>
-                    <Txt variant="small" c={color.inkMuted}>
-                      {assignment.questions.length} questions
-                    </Txt>
-                    {due.text ? (
-                      <Txt variant="small" w={weight.semibold} c={toneStyle(due.tone).fg}>
-                        {due.text}
-                      </Txt>
-                    ) : null}
-                  </Row>
-                  <Button
-                    title={submitted ? 'Retake the review' : 'Start the review'}
-                    icon="pencil"
-                    size="sm"
-                    style={{ marginTop: sp.md }}
+            // Most urgent first: a due-today or overdue review leads (earliest
+            // dueAt sorts to the top), so a closed review never buries a live one.
+            [...data.assignments]
+              .sort(
+                (a, b) => Date.parse(a.assignment.dueAt) - Date.parse(b.assignment.dueAt),
+              )
+              .map(({ assignment, submitted, scorePct }) => {
+                const due = dueLabel(assignment.dueAt);
+                return (
+                  <Card
+                    key={assignment.id}
                     onPress={() => router.push(`/(student)/quiz/${assignment.id}`)}
-                  />
-                </Card>
-              );
-            })
+                  >
+                    <Row style={{ justifyContent: 'space-between' }}>
+                      <Badge
+                        label={submitted ? 'Submitted' : 'To do'}
+                        tone={submitted ? 'ok' : 'warn'}
+                        dot
+                      />
+                      {submitted && scorePct !== null ? (
+                        <Txt variant="tiny" c={color.inkMuted}>
+                          Scored {scorePct}%
+                        </Txt>
+                      ) : null}
+                    </Row>
+                    <Txt variant="h3" style={{ marginTop: sp.sm }}>
+                      {assignment.title}
+                    </Txt>
+                    <Row style={{ justifyContent: 'space-between', marginTop: 2 }}>
+                      <Txt variant="small" c={color.inkMuted}>
+                        {assignment.questions.length} questions
+                      </Txt>
+                      {due.text ? (
+                        <Txt variant="small" w={weight.semibold} c={toneStyle(due.tone).fg}>
+                          {due.text}
+                        </Txt>
+                      ) : null}
+                    </Row>
+                    {/* The card itself is the control (a Pressable): one target,
+                        no nested <button>, one keyboard focus stop. The label
+                        keeps the affordance visible. */}
+                    <Row gap={sp.xs} style={{ marginTop: sp.md }}>
+                      <Txt variant="small" w={weight.semibold} c={color.accent}>
+                        {submitted ? 'Retake the review' : 'Start the review'}
+                      </Txt>
+                      <Icon name="next" size={14} color={color.accent} />
+                    </Row>
+                  </Card>
+                );
+              })
           )}
 
           <Txt variant="h3" style={{ marginTop: sp.sm }}>

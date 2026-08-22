@@ -1,8 +1,9 @@
 // The student's lesson reader. Each section shows any simpler explanations the
 // teacher (with MELDA) has already saved for it. If a section still doesn't land,
-// "I don't get this" posts a REQUEST_SIMPLER signal (POST /signals) - the exact
-// record the teacher sees live on their dashboard, and what prompts them to add
-// an adaptation here.
+// "I don't get this" fires a REQUEST_SIMPLER signal (POST /signals) - the exact
+// record the teacher sees live on their dashboard - AND returns an instant
+// section-grounded AI answer in the same tap, so a stuck student is never left
+// with nothing while the teacher prepares a durable adaptation.
 //
 // Two more things live here: a Save toggle (bookmark the lesson to the Saved tab)
 // and "Study with MELDA" at the bottom - an ask box grounded in this lesson. The
@@ -67,7 +68,7 @@ export default function LessonReader() {
     <Screen>
       <Stack.Screen options={{ title: lesson.title }} />
       <Row style={{ justifyContent: 'flex-end' }}>
-        <SaveToggle lessonId={lesson.id} />
+        <SaveToggle lessonId={lesson.id} saved={lesson.saved} />
       </Row>
       <Txt variant="body" c={color.inkSecondary}>
         {lesson.summary}
@@ -105,26 +106,36 @@ function AdaptationNote({ label, body }: { label: string; body: string }) {
 
 function SectionCard(props: { section: LessonSection; lessonId: string; saved: Adaptation[] }) {
   const { section, lessonId, saved } = props;
-  const [asked, setAsked] = useState(false);
+  const [answer, setAnswer] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
 
-  // Tell the teacher this section didn't land. Recorded once per section; the
-  // teacher's dashboard shows the REQUEST_SIMPLER signal live.
+  // One tap does both halves of "I don't get this": fire the REQUEST_SIMPLER
+  // signal the teacher's dashboard triages, AND get an instant section-grounded
+  // answer back, so the student is never left with nothing while the teacher
+  // (with MELDA) prepares a durable adaptation. The button's own spinner is the
+  // "MELDA is explaining..." state.
   const askForHelp = async () => {
     setBusy(true);
     setFailed(null);
     try {
-      await api.recordSignal({
-        type: 'REQUEST_SIMPLER',
-        conceptId: section.conceptId,
-        lessonId,
-        sectionId: section.id,
-        note: `Asked for a simpler take on "${section.title}"`,
-      });
-      setAsked(true);
+      const [, { answer: a }] = await Promise.all([
+        api.recordSignal({
+          type: 'REQUEST_SIMPLER',
+          conceptId: section.conceptId,
+          lessonId,
+          sectionId: section.id,
+          note: `Asked for a simpler take on "${section.title}"`,
+        }),
+        api.askMelda({
+          lessonId,
+          sectionId: section.id,
+          question: `Can you explain "${section.title}" more simply?`,
+        }),
+      ]);
+      setAnswer(a);
     } catch (e) {
-      setFailed(e instanceof Error ? e.message : 'Could not send that. Try again.');
+      setFailed(e instanceof Error ? e.message : 'Could not reach MELDA. Try again.');
     } finally {
       setBusy(false);
     }
@@ -144,13 +155,16 @@ function SectionCard(props: { section: LessonSection; lessonId: string; saved: A
         <AdaptationNote key={a.id} label={adaptationLabel[a.mode] ?? a.mode} body={a.body} />
       ))}
 
-      {asked ? (
-        <Row gap={sp.xs} style={{ marginTop: sp.md, alignItems: 'flex-start' }}>
-          <Icon name="check" size={16} color={color.accentInk} />
-          <Txt variant="small" c={color.accentInk} style={{ flex: 1 }}>
-            MELDA let your teacher know. A simpler explanation will show up here.
-          </Txt>
-        </Row>
+      {answer ? (
+        <>
+          <AdaptationNote label={adaptationLabel.simpler} body={answer} />
+          <Row gap={sp.xs} style={{ marginTop: sp.md, alignItems: 'flex-start' }}>
+            <Icon name="check" size={16} color={color.accentInk} />
+            <Txt variant="small" c={color.accentInk} style={{ flex: 1 }}>
+              MELDA let your teacher know. A simpler explanation will show up here.
+            </Txt>
+          </Row>
+        </>
       ) : (
         <Button
           title="I don't get this"
@@ -171,30 +185,17 @@ function SectionCard(props: { section: LessonSection; lessonId: string; saved: A
   );
 }
 
-// The Save/Saved toggle. Loads its state once from the student's saved list, then
-// flips optimistically and reverts if the write fails. The label carries the state
-// ("Saved" vs "Save lesson"), so it never relies on colour alone.
-function SaveToggle({ lessonId }: { lessonId: string }) {
-  const [saved, setSaved] = useState<boolean | null>(null);
+// The Save/Saved toggle. The lesson payload already carries this student's
+// saved-state (the backend joins it into GET /lessons/:id), so opening a lesson
+// costs no extra request. The flip is optimistic with a revert if the write
+// fails, and the label carries the state ("Saved" vs "Save lesson"), so it never
+// relies on colour alone.
+function SaveToggle({ lessonId, saved: initiallySaved }: { lessonId: string; saved: boolean }) {
+  const [saved, setSaved] = useState<boolean>(initiallySaved);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    api
-      .savedLessons()
-      .then((ls) => {
-        if (alive) setSaved(ls.some((l) => l.id === lessonId));
-      })
-      .catch(() => {
-        if (alive) setSaved(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [lessonId]);
-
   const toggle = async () => {
-    if (saved === null || busy) return;
+    if (busy) return;
     const next = !saved;
     setBusy(true);
     setSaved(next); // optimistic
@@ -215,7 +216,6 @@ function SaveToggle({ lessonId }: { lessonId: string }) {
       variant={saved ? 'primary' : 'secondary'}
       size="sm"
       loading={busy}
-      disabled={saved === null}
       onPress={toggle}
     />
   );

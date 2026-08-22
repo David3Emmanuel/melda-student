@@ -17,6 +17,8 @@ import type {
   RecordSignalRequest,
   Selections,
   StudentAssignment,
+  StudentLesson,
+  SubmitAssignmentResponse,
 } from 'melda-shared';
 
 // EXPO_PUBLIC_ is inlined into the bundle at build time. This is a URL, not a
@@ -74,9 +76,10 @@ export const api = {
 
   myClasses: () => request<ClassCard[]>('GET', '/me/classes'),
 
-  // The backend returns only published lessons to a student.
+  // The backend returns only published lessons to a student, and the single
+  // lesson read carries this student's saved-state alongside the lesson itself.
   lessons: (classId: string) => request<Lesson[]>('GET', `/classes/${classId}/lessons`),
-  lesson: (lessonId: string) => request<Lesson>('GET', `/lessons/${lessonId}`),
+  lesson: (lessonId: string) => request<StudentLesson>('GET', `/lessons/${lessonId}`),
 
   // Each StudentAssignment carries the paper (answer key stripped) plus this
   // student's own status and score - never a classmate's.
@@ -85,14 +88,13 @@ export const api = {
   assignment: (assignmentId: string) =>
     request<StudentAssignment>('GET', `/assignments/${assignmentId}`),
 
-  // The server grades via buildSubmission and returns the score; the client never
-  // sees the answer key, so it can't grade locally.
+  // The server grades via buildSubmission and returns the score plus the
+  // concepts to re-study; the client never sees the answer key, so it can't
+  // grade locally.
   submitAssignment: (assignmentId: string, selections: Selections) =>
-    request<{ submitted: boolean; scorePct: number }>(
-      'POST',
-      `/assignments/${assignmentId}/submissions`,
-      { selections },
-    ),
+    request<SubmitAssignmentResponse>('POST', `/assignments/${assignmentId}/submissions`, {
+      selections,
+    }),
 
   // A learning signal (e.g. REQUEST_SIMPLER when a student asks for help). The
   // server scopes it to the student's class; this is what the teacher sees live.
