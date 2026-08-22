@@ -61,7 +61,7 @@ export default function StudentHome() {
             <EmptyState
               title="No reviews yet"
               body="When your teacher sets one, it shows up here."
-              icon="reviews"
+              art="reviews"
             />
           ) : (
             // Most urgent first: a due-today or overdue review leads (earliest
@@ -123,7 +123,7 @@ export default function StudentHome() {
             <EmptyState
               title="No lessons yet"
               body="Your teacher's published lessons will appear here."
-              icon="book"
+              art="book"
             />
           ) : (
             data.lessons.map((l) => <LessonCard key={l.id} lesson={l} />)

@@ -30,7 +30,7 @@ export default function SavedLessons() {
           <EmptyState
             title="Nothing saved yet"
             body="Open a lesson and tap Save to keep it here."
-            icon="bookmark"
+            art="saved"
           />
         ) : (
           data.map((l) => <LessonCard key={l.id} lesson={l} />)

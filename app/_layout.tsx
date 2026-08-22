@@ -2,9 +2,6 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import * as Font from 'expo-font';
-import Feather from '@expo/vector-icons/Feather';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { Loading } from 'melda-shared/ui/components';
 import { useSession } from '../src/state/store';
 
@@ -19,9 +16,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     void hydrate();
-    // Preload the two icon families the shared design system renders, so a slow
-    // first paint never flashes blank icon glyphs (the low-bandwidth context).
-    void Font.loadAsync({ ...Feather.font, ...Ionicons.font });
   }, [hydrate]);
 
   return (
