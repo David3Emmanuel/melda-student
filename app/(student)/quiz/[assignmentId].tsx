@@ -32,7 +32,15 @@ import { color, masteryTone, radius, sp, weight } from 'melda-shared/ui/tokens';
 export default function Quiz() {
   const { assignmentId } = useLocalSearchParams<{ assignmentId: string }>();
   const router = useRouter();
-  const { data, loading, error, reload } = useApi(() => api.assignment(assignmentId));
+  // Fetch the paper and, when it is linked to a lesson, that lesson too so the
+  // "from lesson X" line can deep-link back to the teaching.
+  const { data, loading, error, reload } = useApi(async () => {
+    const assignment = await api.assignment(assignmentId);
+    const lesson = assignment.assignment.lessonId
+      ? await api.lesson(assignment.assignment.lessonId).catch(() => null)
+      : null;
+    return { assignment, lesson };
+  });
 
   const [selections, setSelections] = useState<Selections>({});
   const [localScore, setLocalScore] = useState<number | null>(null);
@@ -44,11 +52,12 @@ export default function Quiz() {
 
   // The score to display: the one just earned, or the stored one for an
   // already-submitted paper (unless the student chose to retake).
-  const shownScore = localScore ?? (data?.submitted && !retaking ? data.scorePct : null);
+  const shownScore =
+    localScore ?? (data?.assignment.submitted && !retaking ? data.assignment.scorePct : null);
 
   // Unsaved-guard while the student has answered something they haven't
   // submitted (a fresh unanswered paper and the result view are free to leave).
-  const answerable = data?.assignment.questions.filter((q) => q.choices?.length) ?? [];
+  const answerable = data?.assignment.assignment.questions.filter((q) => q.choices?.length) ?? [];
   useUnsavedGuard(shownScore === null && answerable.some((q) => selections[q.id] !== undefined));
 
   if (loading && !data) {
@@ -73,7 +82,8 @@ export default function Quiz() {
     );
   }
 
-  const { assignment } = data;
+  const { assignment: student, lesson } = data;
+  const assignment = student.assignment;
 
   const submit = async () => {
     setBusy(true);
@@ -107,7 +117,8 @@ export default function Quiz() {
     // Fresh submissions carry their topics in the response; a stored paper
     // carries them on the assignment read (server-computed, so re-opening a
     // result screen never leaks the key either).
-    const topics = localTopics ?? (data.submitted && !retaking ? (data.topicsToReview ?? []) : []);
+    const topics =
+      localTopics ?? (student.submitted && !retaking ? (student.topicsToReview ?? []) : []);
     return (
       <Screen>
         <Stack.Screen options={{ title: assignment.title }} />
@@ -161,6 +172,19 @@ export default function Quiz() {
         {assignment.questions.length} question{assignment.questions.length === 1 ? '' : 's'} · pick
         the best answer.
       </Txt>
+      {lesson ? (
+        <Pressable
+          onPress={() => router.push(`/(student)/lesson/${lesson.id}`)}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={`From the lesson ${lesson.title}. Revisit it.`}
+          style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}
+        >
+          <Txt variant="small" c={color.accentInk} w={weight.semibold} style={{ marginTop: sp.xs }}>
+            From the lesson {lesson.title} · revisit ›
+          </Txt>
+        </Pressable>
+      ) : null}
       {lastScore !== null ? (
         <Txt variant="small" c={color.inkMuted}>
           Your last score was {lastScore}%.

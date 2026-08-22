@@ -33,8 +33,8 @@ importers:
         specifier: ~3.0.9
         version: 3.0.9(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0)
       melda-shared:
-        specifier: github:David3Emmanuel/melda-shared#v0.7.2
-        version: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/a0f705ecf881d2f560f935602df8e6c7b6a3b330(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0)
+        specifier: github:David3Emmanuel/melda-shared#v0.7.4
+        version: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/5a64bf9aee50cafe91dd043d83d59e74898eb36c(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -2364,9 +2364,9 @@ packages:
   mdn-data@2.0.14:
     resolution: {integrity: sha512-dn6wd0uw5GsdswPFfsgMp5NSB0/aDe6fK94YJV/AJDYXL6HVLWBsxeq7js7Ad+mU2K9LAlwpk6kN2D5mwCPVow==}
 
-  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/a0f705ecf881d2f560f935602df8e6c7b6a3b330:
-    resolution: {tarball: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/a0f705ecf881d2f560f935602df8e6c7b6a3b330}
-    version: 0.7.2
+  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/5a64bf9aee50cafe91dd043d83d59e74898eb36c:
+    resolution: {tarball: https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/5a64bf9aee50cafe91dd043d83d59e74898eb36c}
+    version: 0.7.4
     peerDependencies:
       react: '>=19'
       react-native: '>=0.81'
@@ -6118,7 +6118,7 @@ snapshots:
 
   mdn-data@2.0.14: {}
 
-  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/a0f705ecf881d2f560f935602df8e6c7b6a3b330(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0):
+  melda-shared@https://codeload.github.com/David3Emmanuel/melda-shared/tar.gz/5a64bf9aee50cafe91dd043d83d59e74898eb36c(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0))(react@19.1.0):
     optionalDependencies:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.29.7)(@types/react@19.2.18)(react@19.1.0)
