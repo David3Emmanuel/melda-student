@@ -22,8 +22,8 @@ export default function StudentTabs() {
         tabBarStyle: {
           backgroundColor: color.card,
           borderTopColor: color.border,
-          height: 60,
-          paddingBottom: sp.sm,
+          height: 70,
+          paddingBottom: sp.md,
           paddingTop: sp.xs,
         },
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
