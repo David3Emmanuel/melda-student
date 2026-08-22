@@ -25,7 +25,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
 
         <title>{TITLE}</title>
         <meta name="description" content={DESCRIPTION} />
-        <meta name="theme-color" content="#4F46E5" />
+        <meta name="theme-color" content="#1439FF" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="MELDA" />
@@ -45,3 +45,4 @@ export default function Root({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
+
